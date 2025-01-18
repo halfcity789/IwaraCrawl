@@ -7,7 +7,8 @@ class User(object):
         self.__seenAt = None
         self.__createAt = None
         self.__updatedAt = None
-        self.__videoList = None
+        self.__videoCount = None
+        self.__videoIdList = None
 
     def setId(self, uid):
         self.__id = uid
@@ -51,11 +52,17 @@ class User(object):
     def getUpdatedAt(self):
         return self.__updatedAt
 
-    def setVideoList(self, videoList):
-        self.__videoList = videoList
+    def setVideoCount(self, videoCount):
+        self.__videoCount = videoCount
 
-    def getVideoList(self):
-        return self.__videoList
+    def getVideoCount(self):
+        return self.__videoCount
+
+    def setVideoIdList(self, videoIdList):
+        self.__videoIdList = videoIdList
+
+    def getVideoIdList(self):
+        return self.__videoIdList
 
 
 class Video(object):

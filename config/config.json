@@ -1,3 +1,18 @@
 {
-  "output": ".\\output\\"
+  "output": ".\\output\\",
+  "save": {
+    "users": {
+      "1": {
+        "uid": "5ea034af-4507-4a3f-a623-e66a31d27b23",
+        "username": "qishi"
+      },
+      "2": {
+        "uid": "9b742fdd-29b3-4fcc-8b3a-782364e16dea",
+        "username": "LTDEND"
+      }
+    }
+  },
+  "proxy": "http://localhost:7890/",
+  "timeout": 15,
+  "number": 1
 }
