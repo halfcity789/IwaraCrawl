@@ -1,5 +1,5 @@
 from src.config import Config
-from src.crawl import CrawlUsers
+from src.crawl import CrawlVideos
 
 import asyncio
 import logging
@@ -8,10 +8,10 @@ import logging
 def main():
     logging.basicConfig(level=logging.INFO)
     config = Config()
-    userCrawler = CrawlUsers(config)
+    videoCrawler = CrawlVideos(config)
     loop = asyncio.get_event_loop()
 
-    task1 = asyncio.ensure_future(userCrawler.getUsers())
+    task1 = asyncio.ensure_future(videoCrawler.getVideoFile())
 
     tasks = [task1]
 
