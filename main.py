@@ -2,13 +2,10 @@ from src.config import Config
 from src.crawl import CrawlVideos
 
 import asyncio
-import logging
 
 
 def main():
-    logging.basicConfig(level=logging.INFO)
-    config = Config()
-    videoCrawler = CrawlVideos(config)
+    videoCrawler = CrawlVideos(Config())
     loop = asyncio.get_event_loop()
 
     task1 = asyncio.ensure_future(videoCrawler.getVideoFile())

@@ -10,6 +10,15 @@ class User(object):
         self.__videoCount = None
         self.__videoIdList = None
 
+    def basicBuild(self, userInfo: dict):
+        self.setId(userInfo.get("id"))
+        self.setName(userInfo.get("name"))
+        self.setUsername(userInfo.get("username"))
+        self.setStatus(userInfo.get("status"))
+        self.setSeenAt(userInfo.get("seenAt"))
+        self.setCreateAt(userInfo.get("createdAt"))
+        self.setUpdatedAt(userInfo.get("updatedAt"))
+
     def setId(self, uid):
         self.__id = uid
 
@@ -76,6 +85,16 @@ class Video(object):
         self.__fileUrl = None
         self.__isPrivate = None
 
+    def basicBuild(self, videoInfo: dict):
+        self.setId(videoInfo.get("id"))
+        self.setTitle(videoInfo.get("title"))
+        self.setBody(videoInfo.get("body"))
+        self.setIsPrivate(videoInfo.get("private"))
+        self.setLikes(videoInfo.get("numLikes"))
+        self.setViews(videoInfo.get("numViews"))
+        self.setComments(videoInfo.get("numComments"))
+        self.setFileUrl(videoInfo.get("fileUrl"))
+
     def setId(self, videoId):
         self.__id = videoId
 
@@ -118,7 +137,7 @@ class Video(object):
     def getFileUrl(self):
         return self.__fileUrl
 
-    def setIsPrivate(self, isPrivate):
+    def setIsPrivate(self, isPrivate: bool):
         self.__isPrivate = isPrivate
 
     def getIsPrivate(self):

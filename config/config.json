@@ -11,13 +11,10 @@
         "username": "LTDEND"
       }
     },
-    "videos": {
-      "1": {
-        "id": "jKht0GSLbBJlCO"
-      }
-    }
+    "videos": {}
   },
   "proxy": "http://localhost:7890/",
   "timeout": 15000000000,
-  "number": 1
+  "number": 1,
+  "logLevel": "debug"
 }
