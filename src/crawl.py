@@ -2,7 +2,7 @@ import asyncio
 import aiofiles
 
 from aiohttp import ClientSession
-from aiohttp.client_exceptions import ClientConnectorError
+from aiohttp.client_exceptions import ClientConnectorError, ClientProxyConnectionError
 from typing import Tuple, List
 
 from src.model import User, Video
@@ -42,33 +42,37 @@ class CrawlUsers(object):
             for uid in self.__config.getUidList():
                 user = User()
                 self.__logger.debug("getting user with id: {}".format(uid))
-                async with await session.get(url=url.format(uid=uid, page=pages[0], limit=limit), headers=header, proxy=self.__config.getProxy(), timeout=self.__config.getTimeout()) as res:
-                    if res.status != 200:
-                        self.__logger.warning("request for {uid} get {status} (when requesting page {page}, passed)".format(uid=uid, status=res.status, page=0))
-                        continue
-                    userAndVideoInfo = await res.json()
-                    userInfo = userAndVideoInfo.get("results")[0].get("user")
-                    user.basicBuild(userInfo)
-                    user.setVideoCount(userAndVideoInfo.get("count"))
-                    user.setVideoIdList([item.get("id") for item in userAndVideoInfo.get("results")])
-                    videoIdList = [item.get("id") for item in userAndVideoInfo.get("results")]
-
-                    self.__logger.debug("user {} basic built".format(user.getName()))
-
-                for page in pages[1:]:
-                    async with await session.get(url=url.format(uid=uid, page=page, limit=limit), headers=header, proxy=self.__config.getProxy(), timeout=self.__config.getTimeout()) as res:
-                        if res.status == 200:
+                try:
+                    async with await session.get(url=url.format(uid=uid, page=pages[0], limit=limit), headers=header, proxy=self.__config.getProxy(), timeout=self.__config.getTimeout()) as res:
+                        if res.status != 200:
+                            self.__logger.warning("request for {uid} get {status} (when requesting page {page}, passed)".format(uid=uid, status=res.status, page=0))
                             continue
-                        else:
-                            self.__logger.warning("request for {uid} get {status} (in request page {page}, passed)".format(uid=uid, status=res.status, page=page))
                         userAndVideoInfo = await res.json()
-                        videoIdList.append([item.get("id") for item in userAndVideoInfo.get("results")])
-                        await asyncio.sleep(0.5)
+                        userInfo = userAndVideoInfo.get("results")[0].get("user")
+                        user.basicBuild(userInfo)
+                        user.setVideoCount(userAndVideoInfo.get("count"))
+                        user.setVideoIdList([item.get("id") for item in userAndVideoInfo.get("results")])
+                        videoIdList = [item.get("id") for item in userAndVideoInfo.get("results")]
 
-                user.setVideoIdList(videoIdList)
-                users.append(user)
+                        self.__logger.debug("user {} basic built".format(user.getName()))
 
-                self.__logger.debug("got user info: {}".format(user.getName()))
+                    for page in pages[1:]:
+                        async with await session.get(url=url.format(uid=uid, page=page, limit=limit), headers=header, proxy=self.__config.getProxy(), timeout=self.__config.getTimeout()) as res:
+                            if res.status == 200:
+                                continue
+                            else:
+                                self.__logger.warning("request for {uid} get {status} (in request page {page}, passed)".format(uid=uid, status=res.status, page=page))
+                            userAndVideoInfo = await res.json()
+                            videoIdList.append([item.get("id") for item in userAndVideoInfo.get("results")])
+                            await asyncio.sleep(0.5)
+
+                    user.setVideoIdList(videoIdList)
+                    users.append(user)
+
+                    self.__logger.debug("got user info: {}".format(user.getName()))
+                except ClientProxyConnectionError:
+                    self.__logger.critical("proxy is unusable")
+                    exit(1)
 
         return users
 
@@ -125,10 +129,12 @@ class CrawlVideos(object):
                         continue
 
                     fileDownloadList = await res.json()
-                    downloadUrl = "https:%s" % fileDownloadList[3].get("src").get("download")
+                    for file in fileDownloadList:
+                        if file.get("name") == self.__config.getVideoResolution():
+                            downloadUrl = "https:%s" % file.get("src").get("download")
                     try:
                         async with await session.get(url=downloadUrl, headers=headerForFileReq, proxy=self.__config.getProxy(), timeout=self.__config.getTimeout()) as videoFile:
-                            async with aiofiles.open(self.__config.getOutput() + video.getTitle() + ".mp4", "wb") as file:
+                            async with aiofiles.open("%s%s_%s.mp4" % (self.__config.getOutput(), video.getTitle(), self.__config.getVideoResolution()), "wb") as file:
                                 self.__logger.debug("try to download video: {}".format(video.getTitle()))
                                 async for chunk in videoFile.content.iter_chunked(102400):
                                     await file.write(chunk)

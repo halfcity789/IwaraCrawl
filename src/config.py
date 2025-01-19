@@ -21,11 +21,14 @@ class Config(object):
         configGroup.add_argument('--debug', action="store_true", help='enable debug mode', default=True)
         configGroup.add_argument('--timeout', type=int, help='set timeout', default=None)
         configGroup.add_argument('--output', type=str, help='set output', default=".\\output\\")
+        configGroup.add_argument('--resolution', type=str, help='set video Resolution (360, 540, Source, preview)', default="Source")
         configGroup.add_argument('-n', '--number', type=int, help='set crawl number (default: 1)', default=1)
 
         self.__args = parser.parse_args()
         with open("config/config.json") as config:
             self.__config = json.load(config)
+
+        videoResolution = ["360", "540", "Source", "preview"]
 
         if self.__args.useconfig:
             self.__output = self.__config.get("output")
@@ -33,6 +36,7 @@ class Config(object):
             self.__proxy = self.__config.get("proxy")
             self.__number = self.__config.get("number")
             self.__logLevel = self.__config.get("logLevel")
+            self.__videoResolution = self.__config.get("videoResolution")
 
             users = self.__config.get("save").get("users", {})
             self.__uidList = [user['uid'] for user in users.values()]
@@ -44,6 +48,7 @@ class Config(object):
             self.__timeout = self.__args.timeout
             self.__proxy = self.__args.proxy
             self.__number = self.__args.number
+            self.__videoResolution = self.__args.resolution
             self.__uidList = None
             self.__usernameList = None
             self.__videoIdList = None
@@ -66,6 +71,10 @@ class Config(object):
                     self.__usernameList = usernameList.readlines()
 
         self.__logger = getLogger(__name__, self.__logLevel)
+
+        if not self.__videoResolution in videoResolution:
+            self.__logger.critical("resolution should be 360 or 540 or Source or preview")
+            exit(1)
 
         if not self.__uidList:
             if not self.__usernameList:
@@ -104,3 +113,6 @@ class Config(object):
 
     def getLogLevel(self):
         return self.__logLevel
+
+    def getVideoResolution(self):
+        return self.__videoResolution

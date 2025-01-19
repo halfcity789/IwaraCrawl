@@ -16,5 +16,6 @@
   "proxy": "http://localhost:7890/",
   "timeout": 15000000000,
   "number": 1,
-  "logLevel": "debug"
+  "logLevel": "debug",
+  "videoResolution": "preview"
 }

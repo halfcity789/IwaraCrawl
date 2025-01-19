@@ -69,7 +69,7 @@ def getLogger(name: str, level: str) -> logging.Logger:
         consoleHandler.setFormatter(LogFormatter())
 
         # output to log file
-        MAXSIZE = 1024 * 200  # 100KB
+        MAXSIZE = 1024 * 200  # 200KB
         fileHandler = RotatingFileHandlerModified('.\\logs\\log.log', maxBytes=MAXSIZE, backupCount=5)
         fileHandler.setLevel(LEVELS.get(level))
         fileHandler.setFormatter(logging.Formatter("[%(asctime)s] [%(threadName)s] [%(name)s:%(funcName)s] [%(levelname)s]: %(message)s"))
