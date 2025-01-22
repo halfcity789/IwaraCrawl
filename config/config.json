@@ -17,5 +17,11 @@
   "timeout": 15000000000,
   "number": 1,
   "logLevel": "debug",
-  "videoResolution": "preview"
+  "videoResolution": "preview",
+  "sleep": 5,
+  "auto": true,
+  "search": {
+    "videoLimit": 1,
+    "userLimit": 100
+  }
 }

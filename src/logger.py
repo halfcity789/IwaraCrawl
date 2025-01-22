@@ -14,10 +14,23 @@ class LogFormatter(logging.Formatter):
         logging.CRITICAL: Fore.RED + Back.LIGHTYELLOW_EX + Style.BRIGHT
     }
 
+    # Override
     def format(self, record) -> str:
         logFormat = self.COLORS.get(record.levelno) + "[%(levelname)s]: %(message)s" + Style.RESET_ALL
         formatter = logging.Formatter(logFormat)
         return formatter.format(record)
+
+
+class LogErrorHandler(logging.Handler):
+    # Override
+    def emit(self, record):
+        if record.levelno == logging.CRITICAL:
+            exit(1)
+
+
+class ExitOnCriticalHandler(logging.Handler):
+    def emit(self, record):
+        exit(1)
 
 
 class RotatingFileHandlerModified(RotatingFileHandler):
@@ -57,7 +70,7 @@ def getLogger(name: str, level: str) -> logging.Logger:
         "error": logging.ERROR,
         "critical": logging.CRITICAL
     }
-    
+
     logger = logging.getLogger(name)
 
     if not logger.handlers:
@@ -72,9 +85,11 @@ def getLogger(name: str, level: str) -> logging.Logger:
         MAXSIZE = 1024 * 200  # 200KB
         fileHandler = RotatingFileHandlerModified('.\\logs\\log.log', maxBytes=MAXSIZE, backupCount=5)
         fileHandler.setLevel(LEVELS.get(level))
-        fileHandler.setFormatter(logging.Formatter("[%(asctime)s] [%(threadName)s] [%(name)s:%(funcName)s] [%(levelname)s]: %(message)s"))
+        fileHandler.setFormatter(
+            logging.Formatter("[%(asctime)s] [%(threadName)s] [%(name)s:%(funcName)s] [%(levelname)s]: %(message)s"))
 
         logger.addHandler(consoleHandler)
         logger.addHandler(fileHandler)
+        logger.addHandler(LogErrorHandler())
 
     return logger

@@ -9,19 +9,24 @@ class Config(object):
         parser = argparse.ArgumentParser(description='a script to crawl videos of iwara')
 
         targetGroup = parser.add_mutually_exclusive_group()
-        targetGroup.add_argument('-ui', '--userid', type=str, help='set modes userid(format: 1,2,3)', default=None)
+        targetGroup.add_argument('-ui', '--userid', type=str, help='set modes userid(format: 1,2,3)', default="a9b742fdd-29b3-4fcc-8b3a-782364e16de")
         targetGroup.add_argument('-u', '--username', type=str, help='set modes username(only one)', default=None)
         targetGroup.add_argument('-il', '--useridlist', type=str, help='provide user list(format: userid1\\nuserid2\\n)', default=None)
         targetGroup.add_argument('-nl', '--usernamelist', type=str, help='provide user list(format: user1\\nuser2\\n)', default=None)
         targetGroup.add_argument('-vi', '--videoid', type=str, help='set modes userid(format: 1,2,3)', default=None)
+        targetGroup.add_argument('--title', type=str, help="search for videos by video title", default=None)
 
         configGroup = parser.add_argument_group()
-        configGroup.add_argument('--useconfig', action='store_true', help='read user list from config file', default=True)
-        configGroup.add_argument('--proxy', type=str, help='set proxy', default=None)
+        configGroup.add_argument('--useconfig', action='store_true', help='read user list from config file', default=False)
+        configGroup.add_argument('--auto', action='store_true', help='auto pick one when asking to select', default=True)
+        configGroup.add_argument('--userlimit', type=int, help='numbers of user info to get', default=50)
+        configGroup.add_argument('--videolimit', type=int, help='numbers of videos to pick', default=1)
+        configGroup.add_argument('--proxy', type=str, help='set proxy', default="http://localhost:7890/")
         configGroup.add_argument('--debug', action="store_true", help='enable debug mode', default=True)
-        configGroup.add_argument('--timeout', type=int, help='set timeout', default=None)
+        configGroup.add_argument('--timeout', type=int, help='set timeout', default=150000)
+        configGroup.add_argument('--sleep', type=int, help='set sleep time after crawled a vide', default=5)
         configGroup.add_argument('--output', type=str, help='set output', default=".\\output\\")
-        configGroup.add_argument('--resolution', type=str, help='set video Resolution (360, 540, Source, preview)', default="Source")
+        configGroup.add_argument('-r', '--resolution', type=str, help='set video Resolution (360, 540, Source, preview)', default="preview")
         configGroup.add_argument('-n', '--number', type=int, help='set crawl number (default: 1)', default=1)
 
         self.__args = parser.parse_args()
@@ -30,6 +35,15 @@ class Config(object):
 
         videoResolution = ["360", "540", "Source", "preview"]
 
+        # init
+        self.__uidList = None
+        self.__usernameList = None
+        self.__videoIdList = None
+        self.__searchLimit = {
+            "user": None,
+            "video": None
+        }
+
         if self.__args.useconfig:
             self.__output = self.__config.get("output")
             self.__timeout = self.__config.get("timeout")
@@ -37,6 +51,12 @@ class Config(object):
             self.__number = self.__config.get("number")
             self.__logLevel = self.__config.get("logLevel")
             self.__videoResolution = self.__config.get("videoResolution")
+            self.__sleep = self.__config.get("sleep")
+            self.__isAutoSelect = self.__config.get("auto")
+
+            if self.__isAutoSelect:
+                self.__searchLimit["user"] = self.__config.get("search").get("userLimit")
+                self.__searchLimit["video"] = self.__config.get("search").get("videoLimit")
 
             users = self.__config.get("save").get("users", {})
             self.__uidList = [user['uid'] for user in users.values()]
@@ -49,12 +69,15 @@ class Config(object):
             self.__proxy = self.__args.proxy
             self.__number = self.__args.number
             self.__videoResolution = self.__args.resolution
-            self.__uidList = None
-            self.__usernameList = None
-            self.__videoIdList = None
+            self.__sleep = self.__args.sleep
+            self.__isAutoSelect = self.__args.auto
 
             if self.__args.debug:
                 self.__logLevel = "debug"
+
+            if self.__args.auto:
+                self.__searchLimit["user"] = self.__args.userlimit
+                self.__searchLimit["video"] = self.__args.videolimit
 
             if self.__args.userid:
                 self.__uidList = self.__args.userid.split(",")
@@ -69,23 +92,25 @@ class Config(object):
             if self.__args.usernamelist:
                 with open(self.__args.usernamelist, "r") as usernameList:
                     self.__usernameList = usernameList.readlines()
-
+            elif self.__args.username:
+                self.__usernameList = [self.__args.username]
         self.__logger = getLogger(__name__, self.__logLevel)
 
-        if not self.__videoResolution in videoResolution:
-            self.__logger.critical("resolution should be 360 or 540 or Source or preview")
-            exit(1)
+        if self.__videoResolution not in videoResolution:
+            self.__logger.critical("resolution should be 360 or 540 or Source or preview(try --help)")
 
         if not self.__uidList:
             if not self.__usernameList:
                 if not self.__videoIdList:
-                    self.__logger.error("uidList or usernameList or videoList is null")
-                    exit(1)
+                    self.__logger.critical("uidList or usernameList or videoList is null(try --help)")
 
         if not self.__output:
-            self.__logger.error("output path is null")
-            exit(1)
+            self.__logger.critical("output path is null(try --help)")
+
         self.__logger.debug("loaded config")
+
+    def setLogLevel(self, logLevel: str):
+        self.__logLevel = logLevel
 
     def getUidList(self):
         return self.__uidList
@@ -116,3 +141,12 @@ class Config(object):
 
     def getVideoResolution(self):
         return self.__videoResolution
+
+    def getSleep(self):
+        return self.__sleep
+
+    def getIsAutoSelect(self):
+        return self.__isAutoSelect
+
+    def getSearchLimit(self):
+        return self.__searchLimit

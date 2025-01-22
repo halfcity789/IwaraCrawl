@@ -7,6 +7,7 @@ class User(object):
         self.__seenAt = None
         self.__createAt = None
         self.__updatedAt = None
+        self.__followers = None
         self.__videoCount = None
         self.__videoIdList = None
 
@@ -63,6 +64,12 @@ class User(object):
 
     def setVideoCount(self, videoCount):
         self.__videoCount = videoCount
+
+    def getFollowers(self):
+        return self.__followers
+
+    def setFollowers(self, followers):
+        self.__followers = followers
 
     def getVideoCount(self):
         return self.__videoCount
