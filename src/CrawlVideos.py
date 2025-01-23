@@ -6,11 +6,8 @@ from aiohttp.client_exceptions import ClientConnectorError, ContentTypeError
 from typing import List, Optional
 from tqdm.asyncio import tqdm
 
-from src.CrawlUsers import CrawlUsers
 from src.model import Video, User
-from src.search import Search
 from src.res import header
-from src.utils.CountUtils import getPagesAndLimit
 from src.crypto import Crypto
 from src.config import Config
 from src.logger import getLogger
@@ -51,33 +48,10 @@ class CrawlVideos(object):
 
         return videos
 
-    async def __pickVideos(self) -> List[Video]:
-        videoIdList = self.__config.getVideoIdList()
-        if self.__config.getUsernameList():
-            searcher = Search(self.__config)
-            users = await searcher.searchUserByUsername(self.__config.getUsernameList()[0])
-            videos = await self.getVideos(users, videoIdList)
-        elif self.__config.getVideoTitleList():
-            searcher = Search(self.__config)
-            videoIdList = await searcher.searchVideoIdListByVideoTitle(self.__config.getVideoTitleList()[0])
-            videos = await self.getVideos(None, videoIdList)
-        else:
-            userCrawler = CrawlUsers(self.__config)
-            pages, limit = getPagesAndLimit(self.__config.getNumber())
-            users = await userCrawler.getUsers(self.__config.getUidList(), pages, limit)
-            videos = await self.getVideos(users, videoIdList)
-
-        return videos
-
-    async def getVideoFile(self) -> None:
-        self.__logger.info("video numbers to crawl: {}".format(self.__config.getNumber()))
-        self.__logger.info("selected resolution: {}".format(self.__config.getVideoResolution()))
-        self.__logger.info("try to download videos...")
-
-        videos = await self.__pickVideos()
-
-        generator = Crypto()
-        for video in videos:
+    async def getVideoFile(self, videos: list) -> None:
+        while videos:
+            video = videos.pop()
+            generator = Crypto()
             if video.getIsPrivate():
                 self.__logger.error("warning video {} is private (passed already)".format(video.getTitle()))
                 continue
@@ -108,7 +82,9 @@ class CrawlVideos(object):
                                         await file.write(chunk)
                                         pbar.update(len(chunk))
                                 self.__logger.info("video downloaded: {}({} bytes)".format(video.getTitle(), fileSize))
-                                await asyncio.sleep(self.__config.getSleep())
+                                if videos:
+                                    self.__logger.debug("sleep for {}s".format(self.__config.getSleep()))
+                                    await asyncio.sleep(self.__config.getSleep())
                     except ClientConnectorError as e:
                         self.__logger.error(e)
                         self.__logger.warning("this error may caused by too low request interval time (passed already)")
@@ -122,3 +98,5 @@ class CrawlVideos(object):
                         self.__logger.warning("this error likely caused by target resolution {} doesn't exist to this video".format(self.__config.getVideoResolution()))
                         self.__logger.debug("available: {}".format(file))
                         continue
+
+        self.__logger.debug("task {} exit".format(asyncio.current_task().get_name()))

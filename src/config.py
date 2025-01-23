@@ -13,8 +13,8 @@ class Config(object):
         targetGroup.add_argument('-u', '--username', type=str, help='set modes username(only one)', default=None)
         targetGroup.add_argument('-il', '--useridlist', type=str, help='provide user list(format: userid1\\nuserid2\\n)', default=None)
         targetGroup.add_argument('-nl', '--usernamelist', type=str, help='provide user list(format: user1\\nuser2\\n)', default=None)
-        targetGroup.add_argument('-vi', '--videoid', type=str, help='set modes userid(format: 1,2,3)', default=None)
-        targetGroup.add_argument('-vt', '--videotitle', type=str, help="search for videos by video title", default="第20241205期-弱音-exid - up down-4K")
+        targetGroup.add_argument('-vi', '--videoid', type=str, help='set modes userid(format no blank: 1,2,3)', default="jKht0GSLbBJlCO,X53mTzYaYKae4t,hOamHEVamaCSEG")
+        targetGroup.add_argument('-vt', '--videotitle', type=str, help="search for videos by video title", default=None)
 
         configGroup = parser.add_argument_group()
         configGroup.add_argument('--useconfig', action='store_true', help='read user list from config file', default=False)
@@ -24,6 +24,7 @@ class Config(object):
         configGroup.add_argument('--proxy', type=str, help='set proxy', default="http://localhost:7890/")
         configGroup.add_argument('--debug', action="store_true", help='enable debug mode', default=True)
         configGroup.add_argument('--timeout', type=int, help='set timeout', default=150000)
+        configGroup.add_argument('-t', '--task', type=int, help='set task number to crawl(default: 1)', default=1)
         configGroup.add_argument('--sleep', type=int, help='set sleep time after crawled a vide', default=5)
         configGroup.add_argument('--output', type=str, help='set output', default=".\\output\\")
         configGroup.add_argument('-r', '--resolution', type=str, help='set video Resolution (360, 540, Source, preview)', default="preview")
@@ -54,6 +55,7 @@ class Config(object):
             self.__videoResolution = self.__config.get("videoResolution")
             self.__sleep = self.__config.get("sleep")
             self.__isAutoSelect = self.__config.get("auto")
+            self.__taskNumber = self.__config.get("taskNumber")
 
             if self.__isAutoSelect:
                 self.__searchLimit["user"] = self.__config.get("search").get("userLimit")
@@ -73,6 +75,7 @@ class Config(object):
             self.__videoResolution = self.__args.resolution
             self.__sleep = self.__args.sleep
             self.__isAutoSelect = self.__args.auto
+            self.__taskNumber = self.__args.task
 
             if self.__args.debug:
                 self.__logLevel = "debug"
@@ -102,6 +105,9 @@ class Config(object):
 
         if self.__videoResolution not in videoResolution:
             self.__logger.critical("resolution should be 360 or 540 or Source or preview(try --help)")
+
+        if self.__taskNumber <= 0:
+            self.__taskNumber = 1
 
         if not self.__uidList:
             if not self.__usernameList:
@@ -158,3 +164,6 @@ class Config(object):
 
     def getSearchLimit(self):
         return self.__searchLimit
+
+    def getTaskNumber(self):
+        return self.__taskNumber

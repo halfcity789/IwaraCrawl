@@ -19,6 +19,7 @@
   "logLevel": "debug",
   "videoResolution": "preview",
   "sleep": 5,
+  "taskNumber": 1,
   "auto": true,
   "search": {
     "videoLimit": 1,
