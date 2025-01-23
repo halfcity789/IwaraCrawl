@@ -20,14 +20,15 @@ class CrawlUsers(object):
         if not pages:
             pages = [0]
 
-        url = "%svideos?rating=all&user={uid}&page={page}&limit={limit}" % self.__apiUrlBase
+        videoApiUrl = "%svideos?rating=all&user={uid}&page={page}&limit={limit}" % self.__apiUrlBase
+        followerApiUrl = "%suser/{uid}/followers?limit={limit}" % self.__apiUrlBase
         users = []
         async with ClientSession() as session:
             for uid in uidList:
                 user = User()
                 self.__logger.debug("getting user with id: {}".format(uid))
                 try:
-                    async with await session.get(url=url.format(uid=uid, page=pages[0], limit=limit), headers=header, proxy=self.__config.getProxy(), timeout=self.__config.getTimeout()) as res:
+                    async with await session.get(url=videoApiUrl.format(uid=uid, page=pages[0], limit=limit), headers=header, proxy=self.__config.getProxy(), timeout=self.__config.getTimeout()) as res:
                         if res.status != 200:
                             self.__logger.error("request for {uid} get {status} (when requesting page {page}, passed)".format(uid=uid, status=res.status, page=0))
                             continue
@@ -41,7 +42,7 @@ class CrawlUsers(object):
                         self.__logger.debug("user {} basic built".format(user.getName()))
 
                     for page in pages[1:]:
-                        async with await session.get(url=url.format(uid=uid, page=page, limit=limit), headers=header, proxy=self.__config.getProxy(), timeout=self.__config.getTimeout()) as res:
+                        async with await session.get(url=videoApiUrl.format(uid=uid, page=page, limit=limit), headers=header, proxy=self.__config.getProxy(), timeout=self.__config.getTimeout()) as res:
                             if res.status == 200:
                                 continue
                             else:
@@ -51,8 +52,7 @@ class CrawlUsers(object):
                             await asyncio.sleep(0.5)
                     user.setVideoIdList(videoIdList)
 
-                    url = "%suser/{uid}/followers?limit={limit}" % self.__apiUrlBase
-                    async with await session.get(url=url.format(uid=uid, page=0, limit=1), headers=header,
+                    async with await session.get(url=followerApiUrl.format(uid=uid, page=0, limit=1), headers=header,
                                                  proxy=self.__config.getProxy(),
                                                  timeout=self.__config.getTimeout()) as res:
                         if res.status != 200:
@@ -65,7 +65,7 @@ class CrawlUsers(object):
                 except ClientProxyConnectionError as e:
                     self.__logger.critical(e)
                 except IndexError:
-                    self.__logger.warning("user with uid {} doesn't have any videos".format(uid))
+                    self.__logger.warning("user with uid {} doesn't have any videos or exist".format(uid))
 
         return users
 

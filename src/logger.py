@@ -28,11 +28,6 @@ class LogErrorHandler(logging.Handler):
             exit(1)
 
 
-class ExitOnCriticalHandler(logging.Handler):
-    def emit(self, record):
-        exit(1)
-
-
 class RotatingFileHandlerModified(RotatingFileHandler):
     def __init__(self, filename, mode='a', maxBytes=0, backupCount=0, encoding=None, delay=False, errors=None):
         super().__init__(filename, mode, maxBytes, backupCount, encoding, delay, errors)

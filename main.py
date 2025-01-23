@@ -3,7 +3,7 @@ import datetime
 import time
 
 from src.config import Config
-from src.CrawlVIdeos import CrawlVideos
+from src.CrawlVideos import CrawlVideos
 from src.logger import getLogger
 
 
