@@ -13,7 +13,7 @@ class Config(object):
         targetGroup.add_argument('-u', '--username', type=str, help='set modes username(only one)', default=None)
         targetGroup.add_argument('-il', '--useridlist', type=str, help='provide user list(format: userid1\\nuserid2\\n)', default=None)
         targetGroup.add_argument('-nl', '--usernamelist', type=str, help='provide user list(format: user1\\nuser2\\n)', default=None)
-        targetGroup.add_argument('-vi', '--videoid', type=str, help='set modes userid(format no blank: 1,2,3)', default="jKht0GSLbBJlCO,X53mTzYaYKae4t,hOamHEVamaCSEG")
+        targetGroup.add_argument('-vi', '--videoid', type=str, help='set modes userid(format no blank: 1,2,3)', default=None)
         targetGroup.add_argument('-vt', '--videotitle', type=str, help="search for videos by video title", default=None)
 
         configGroup = parser.add_argument_group()
@@ -24,11 +24,12 @@ class Config(object):
         configGroup.add_argument('--proxy', type=str, help='set proxy', default="http://localhost:7890/")
         configGroup.add_argument('--debug', action="store_true", help='enable debug mode', default=True)
         configGroup.add_argument('--timeout', type=int, help='set timeout', default=150000)
-        configGroup.add_argument('-t', '--task', type=int, help='set task number to crawl(default: 1)', default=1)
+        configGroup.add_argument('-t', '--task', type=int, help='set task number to crawl(default: 1)', default=2)
         configGroup.add_argument('--sleep', type=int, help='set sleep time after crawled a vide', default=5)
         configGroup.add_argument('--output', type=str, help='set output', default=".\\output\\")
-        configGroup.add_argument('-r', '--resolution', type=str, help='set video Resolution (360, 540, Source, preview)', default="preview")
+        configGroup.add_argument('-r', '--resolution', type=str, help='set video Resolution (360, 540, Source, preview)', default="Source")
         configGroup.add_argument('-n', '--number', type=int, help='set crawl number (default: 1)', default=1)
+        configGroup.add_argument("--progress", action='store_true', help='enable progress output')
 
         self.__args = parser.parse_args()
         with open("config/config.json") as config:
@@ -56,6 +57,7 @@ class Config(object):
             self.__sleep = self.__config.get("sleep")
             self.__isAutoSelect = self.__config.get("auto")
             self.__taskNumber = self.__config.get("taskNumber")
+            self.__progress = self.__config.get("enableProgress")
 
             if self.__isAutoSelect:
                 self.__searchLimit["user"] = self.__config.get("search").get("userLimit")
@@ -76,6 +78,7 @@ class Config(object):
             self.__sleep = self.__args.sleep
             self.__isAutoSelect = self.__args.auto
             self.__taskNumber = self.__args.task
+            self.__progress = self.__args.progress
 
             if self.__args.debug:
                 self.__logLevel = "debug"
@@ -167,3 +170,6 @@ class Config(object):
 
     def getTaskNumber(self):
         return self.__taskNumber
+
+    def getProgress(self):
+        return self.__progress

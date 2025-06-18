@@ -24,9 +24,11 @@ class Search(object):
     async def searchUserByUsername(self, username: str) -> List[User]:
         return await self.__searchUsers(username)
 
-    async def searchUserByUsernameList(self, usernameList: list) -> List[List[User]]:
-        # TODO: deving
-        pass
+    async def searchUserByUsernameList(self, usernameList: List[str]) -> List[List[User]]:
+        usersList = []
+        for username in usernameList:
+            usersList.append(await self.searchUserByUsername(username))
+        return usersList
 
     async def searchVideoIdListByVideoTitle(self, title: str) -> List[str]:
         return await self.__searchVideosIdList(title)

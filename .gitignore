@@ -1,4 +1,6 @@
 .idea/
+.vscode/
 test.py
-/logs/
-/output/
+/logs/*
+/output/*
+*.i64

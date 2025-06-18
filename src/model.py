@@ -1,3 +1,7 @@
+from src.config import Config
+from src.logger import getLogger
+
+
 class User(object):
     def __init__(self):
         self.__id = None
@@ -149,3 +153,9 @@ class Video(object):
 
     def getIsPrivate(self):
         return self.__isPrivate
+
+
+class BaseCrawler(object):
+    def __init__(self, config: Config, name) -> None:
+        self._config = config
+        self._logger = getLogger(name, self._config.getLogLevel())

@@ -17,8 +17,20 @@ async def pickVideos(config: Config, videoCrawler: CrawlVideos) -> List[Video]:
     videoIdList = config.getVideoIdList()
     if config.getUsernameList():
         searcher = Search(config)
-        users = await searcher.searchUserByUsername(config.getUsernameList()[0])
-        videos = await videoCrawler.getVideos(users, videoIdList)
+        videos = []
+        if len(config.getUsernameList()) == 1:
+            users = await searcher.searchUserByUsername(config.getUsernameList()[0])
+            videos = await videoCrawler.getVideos(users, videoIdList)
+        elif len(config.getUsernameList()) >= 2:
+            # 这里先将额外的videoId处理掉
+            targetUsernameList = config.getUsernameList().copy()
+            users = await searcher.searchUserByUsername(targetUsernameList[0])
+            videos = await videoCrawler.getVideos(users, videoIdList)
+            del targetUsernameList[0]
+            # 这里处理剩下的用户名
+            usersList = await searcher.searchUserByUsernameList(config.getUsernameList())
+            for users in usersList:
+                videos.extend(await videoCrawler.getVideos(users, None))
     elif config.getVideoTitleList():
         searcher = Search(config)
         videoIdList = await searcher.searchVideoIdListByVideoTitle(config.getVideoTitleList()[0])

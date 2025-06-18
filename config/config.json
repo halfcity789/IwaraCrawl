@@ -11,7 +11,11 @@
         "username": "LTDEND"
       }
     },
-    "videos": {}
+    "videos": {
+      "jKht0GSLbBJlCO": "123",
+      "X53mTzYaYKae4t": "123",
+      "hOamHEVamaCSEG": "123"
+    }
   },
   "proxy": "http://localhost:7890/",
   "timeout": 15000000000,
@@ -21,6 +25,7 @@
   "sleep": 5,
   "taskNumber": 1,
   "auto": true,
+  "enableProgress": false,
   "search": {
     "videoLimit": 1,
     "userLimit": 100
