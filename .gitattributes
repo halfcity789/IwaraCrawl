@@ -1,0 +1,4 @@
+*.c   linguist-language=text
+*.cpp linguist-language=text
+*.h   linguist-language=text
+*.hpp linguist-language=text
